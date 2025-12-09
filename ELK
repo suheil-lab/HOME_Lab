@@ -3,19 +3,28 @@
 
 
 curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch |sudo gpg --dearmor -o /usr/share/keyrings/elastic.gpg
-echo "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+echo "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-8.x.list
 
 sudo apt update
 
+# install elasticsearch
 sudo apt install elasticsearch
 sudo nano /etc/elasticsearch/elasticsearch.yml
 sudo systemctl start elasticsearch
 sudo systemctl enable elasticsearch
 curl -X GET "localhost:9200"
-
-
+curl -X GET -K "https://localhost:9200"
+curl -X GET -K "https://user:pass@localhost:9200"
+ 
+# install kibana
 sudo apt install kibana
 sudo systemctl enable kibana
 sudo systemctl start kibana
 echo "kibanaadmin:`openssl passwd -apr1`" | sudo tee -a /etc/nginx/htpasswd.users
 sudo nano /etc/nginx/sites-available/your_domain
+
+# install nginx:
+sudo apt install nginx
+sudo vim /etc/nginx/stites-enabled/default -> location -> proxy_pass http://172.0.0.1:5601
+sudo systemctl restart ngnix
+sudo systemctl enabled ngnix
