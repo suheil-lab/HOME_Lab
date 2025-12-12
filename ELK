@@ -28,3 +28,68 @@ sudo apt install nginx
 sudo vim /etc/nginx/stites-enabled/default -> location -> proxy_pass http://172.0.0.1:5601
 sudo systemctl restart ngnix
 sudo systemctl enabled ngnix
+
+
+# logstash:
+
+https://www.youtube.com/watch?v=qxUAxU44g3c
+https://discuss.elastic.co/t/fastest-way-to-ingest-csvs-with-logstash-to-elasticsearch/333118
+https://asibin99.medium.com/loading-csv-data-into-elasticsearch-with-logstash-4c473a190969
+https://www.youtube.com/watch?v=nW5S2SSwb4g
+
+
+/** google result :
+
+To upload a CSV file to Elasticsearch using Logstash, a configuration file defining the input, filter, and output sections is required.
+1. Create a Logstash Configuration File (e.g., csv_to_es.conf):
+Code
+
+input {
+  file {
+    path => "/path/to/your/file.csv"  # Specify the full path to your CSV file
+    start_position => "beginning"    # Start reading from the beginning of the file
+    sincedb_path => "/dev/null"      # Prevents Logstash from tracking file position (useful for one-time imports)
+  }
+}
+
+filter {
+  csv {
+    separator => ","                 # Specify the delimiter used in your CSV (e.g., "," for comma)
+    columns => ["column1", "column2", "column3"] # List the column headers in order
+    # You can add other filters here, like mutate to convert data types
+    # mutate {
+    #   convert => { "column_name" => "float" }
+    # }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]      # Specify your Elasticsearch host and port
+    index => "your_index_name"       # The name of the Elasticsearch index to store the data
+    # You can also specify document_type, user, password if needed
+  }
+}
+Explanation of sections:
+Input:
+path: The absolute path to your CSV file.
+start_position: Determines where Logstash begins reading the file. Use "beginning" for a full import.
+sincedb_path: Setting this to /dev/null (Linux/macOS) or NUL (Windows) is useful for one-time imports, preventing Logstash from tracking the file's read position.
+Filter:
+csv: This plugin parses the CSV data.
+separator: Defines the character separating values in your CSV (e.g., ,, ;, \t).
+columns: An ordered list of column headers, matching your CSV file.
+mutate: (Optional) Used for data type conversions or other field manipulations.
+Output:
+elasticsearch: This plugin sends the processed data to Elasticsearch.
+hosts: An array containing the host and port of your Elasticsearch instance.
+index: The name of the Elasticsearch index where the data will be stored.
+2. Run Logstash:
+Open your terminal or command prompt, navigate to your Logstash installation directory, and execute the following command, replacing csv_to_es.conf with your configuration file name:
+Code
+
+bin/logstash -f /path/to/your/csv_to_es.conf
+Logstash will then read the CSV file, parse it according to your filter configurations, and ingest the data into the specified Elasticsearch index.
+
+
+**/
